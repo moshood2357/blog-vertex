@@ -1,0 +1,129 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+{{ ckeditor.load() }}
+
+<div class="container py-5">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mb-4">
+        &larr; Back to Dashboard
+    </a>
+
+    <h2>Create New Post</h2>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="toast align-items-center text-bg-{{ category }} border-0 shadow-lg mb-2" role="alert"
+            aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+    
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Title -->
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control", id="title", placeholder="Enter post title") }}
+            {% for error in form.title.errors %}
+            <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Slug -->
+        <div class="mb-3">
+            {{ form.slug.label(class="form-label") }}
+            {{ form.slug(class="form-control", id="slug", placeholder="Enter post slug") }}
+            {% for error in form.slug.errors %}
+            <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Excerpt -->
+        <div class="mb-3">
+            {{ form.excerpt.label(class="form-label") }}
+            {{ form.excerpt(class="form-control", placeholder="Enter short excerpt") }}
+        </div>
+
+        <!-- Content -->
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content() }}
+            {{ ckeditor.config(name='content') }}
+        </div>
+
+        <!-- Category -->
+        <div class="mb-3">
+            {{ form.category.label(class="form-label") }}
+            {{ form.category(class="form-select") }}
+        </div>
+
+        <!-- Featured Image -->
+        <div class="mb-3">
+            {{ form.featured_image.label(class="form-label") }}
+            {{ form.featured_image(class="form-control") }}
+        </div>
+
+        <!-- Status -->
+        <div class="mb-3">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-select") }}
+        </div>
+
+        <!-- Featured Checkbox -->
+        <div class="form-check mb-3">
+            {{ form.is_featured(class="form-check-input") }}
+            {{ form.is_featured.label(class="form-check-label") }}
+        </div>
+
+        <button type="submit" class="btn btn-primary" data-loading-text="Creating post...">Create Post</button>
+    </form>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const titleInput = document.getElementById("title");
+        const slugInput = document.getElementById("slug");
+
+        function slugify(text) {
+            return text
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, "")
+                .replace(/\s+/g, "-")
+                .replace(/-+/g, "-");
+        }
+
+        // Auto-generate slug while typing (only if slug is empty)
+        titleInput.addEventListener("input", function () {
+            if (!slugInput.dataset.manual) {
+                slugInput.value = slugify(titleInput.value);
+            }
+        });
+
+        // Detect manual slug edit
+        slugInput.addEventListener("input", function () {
+            slugInput.dataset.manual = "true";
+        });
+
+    });
+</script>
+{% endblock js %}

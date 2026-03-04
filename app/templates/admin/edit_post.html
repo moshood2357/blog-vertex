@@ -1,0 +1,96 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Edit Post: {{ post.title }}</h2>
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="toast align-items-center text-bg-{{ category }} border-0 shadow-lg mb-2" role="alert"
+            aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+    
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        </div>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Title -->
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control", size=80) }}
+        </div>
+
+        <!-- Slug -->
+        <div class="mb-3">
+            {{ form.slug.label(class="form-label") }}
+            {{ form.slug(class="form-control", size=80) }}
+        </div>
+
+        <!-- Excerpt -->
+        <div class="mb-3">
+            {{ form.excerpt.label(class="form-label") }}
+            {{ form.excerpt(class="form-control", rows=3) }}
+        </div>
+
+        <!-- Content -->
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control", rows=10) }}
+        </div>
+
+        <!-- Category -->
+        <div class="mb-3">
+            {{ form.category.label(class="form-label") }}
+            {{ form.category(class="form-select") }}
+        </div>
+
+        <!-- Status -->
+        <div class="mb-3">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-select") }}
+        </div>
+
+        <!-- Featured -->
+        <div class="form-check mb-3">
+            {{ form.is_featured(class="form-check-input") }}
+            {{ form.is_featured.label(class="form-check-label") }}
+        </div>
+
+        <!-- Featured Image Upload -->
+        <div class="mb-3">
+            {{ form.featured_image.label(class="form-label") }}
+            {{ form.featured_image(class="form-control") }}
+        </div>
+
+        <!-- Current Image Preview -->
+        {% if post.featured_image %}
+        <div class="mb-3">
+            <p class="fw-bold">Current Image:</p>
+            <img src="{{ url_for('static', filename='uploads/' + post.featured_image) }}" alt="Featured Image"
+                style="max-width:300px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+        </div>
+        {% endif %}
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-primary">
+            Update Post
+        </button>
+
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary ms-2">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

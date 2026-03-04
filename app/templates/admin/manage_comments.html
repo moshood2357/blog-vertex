@@ -1,0 +1,86 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="toast align-items-center text-bg-{{ category }} border-0 shadow-lg mb-2" role="alert"
+        aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+
+        <div class="d-flex">
+            <div class="toast-body">
+                {{ message }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+</div>
+<div class="container py-5">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mb-4">
+        &larr; Back to Dashboard
+    </a>
+
+    <h2 class="mb-4">Comment Moderation</h2>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Post</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th width="220">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comment in comments %}
+            <tr>
+                <td>{{ comment.post.title }}</td>
+                <td>{{ comment.name }}</td>
+                <td>{{ comment.email }}</td>
+                <td style="max-width:250px;">
+                    {{ comment.content[:120] }}{% if comment.content|length > 120 %}...{% endif %}
+                </td>
+                <td>
+                    {% if comment.is_approved %}
+                    <span class="badge bg-success">Approved</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <!-- Toggle Approve/Unapprove -->
+                    <form method="POST" action="{{ url_for('admin.toggle_comment', comment_id=comment.id) }}"
+                        style="display:inline;">
+                        {{ form.hidden_tag() }}
+                        <button class="btn btn-sm btn-outline-primary">
+                            {% if comment.is_approved %}
+                            Unapprove
+                            {% else %}
+                            Approve
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <!-- Delete Comment -->
+                    <form method="POST" action="{{ url_for('admin.delete_comment', comment_id=comment.id) }}"
+                        style="display:inline;"
+                        onsubmit="return confirm('Are you sure you want to delete this comment?');">
+                        {{ form.hidden_tag() }}
+                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

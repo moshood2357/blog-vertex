@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Compose Newsletter{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+   
+
+    {{ ckeditor.load() }}
+
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mb-4">
+        &larr; Back to Dashboard
+    </a>
+
+    <h2 class="pt-3">Compose Newsletter</h2>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="toast align-items-center text-bg-{{ category }} border-0 shadow-lg mb-2" role="alert"
+            aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+    
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        </div>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.subject.label(class="form-label") }}
+            {{ form.subject(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control", rows="10") }}
+            {{ ckeditor.config(name='content') }}
+        </div>
+        <button type="submit" class="btn btn-primary" data-loading-text="sending newsletter...">{{ form.submit.label.text }}</button>
+    </form>
+</div>
+{% endblock %}

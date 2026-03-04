@@ -1,0 +1,39 @@
+.card {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        filter 0.5s ease;
+    will-change: transform, box-shadow, filter;
+    cursor: pointer;
+    border-radius: 12px;
+    /* smoother corners */
+    overflow: hidden;
+    background-color: #fff;
+}
+
+/* Hover effect */
+.card:hover {
+    transform: translateY(-10px) scale(1.02) perspective(500px) rotateX(1deg);
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.12),
+        0 5px 15px rgba(0, 0, 0, 0.08);
+    filter: brightness(1.03);
+    /* subtle highlight */
+}
+
+.blog-banner {
+    width: 100%;
+    height: clamp(250px, 40vh, 450px);
+    object-fit: cover;
+    display:block;
+}
+
+.blog-excerpt {
+    height: 72px;
+    /* controls fixed height */
+    overflow: hidden;
+    /* hides extra text */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    /* show only 3 lines */
+    -webkit-box-orient: vertical;
+}

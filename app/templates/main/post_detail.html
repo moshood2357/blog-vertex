@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ post.meta_title if post.meta_title else post.title }}
+{% endblock %}
+
+
+
+{% block meta %}
+<meta name="description" content="{{ post.meta_description if post.meta_description else post.excerpt }}">
+
+{% if post.focus_keyword %}
+<meta name="keywords" content="{{ post.focus_keyword }}">
+{% endif %}
+
+{% if post.canonical_url %}
+<link rel="canonical" href="{{ post.canonical_url }}">
+{% endif %}
+
+<!-- Open Graph -->
+<meta property="og:title" content="{{ post.og_title if post.og_title else post.title }}">
+
+<meta property="og:description" content="{{ post.og_description if post.og_description else post.excerpt }}">
+
+{% if post.og_image %}
+<meta property="og:image" content="{{ url_for('static', filename='uploads/' + post.og_image, _external=True) }}">
+{% elif post.featured_image %}
+<meta property="og:image" content="{{ url_for('static', filename='uploads/' + post.featured_image, _external=True) }}">
+{% endif %}
+
+<meta property="og:type" content="article">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="twitter:title" content="{{ post.twitter_title if post.twitter_title else post.title }}">
+
+<meta name="twitter:description" content="{{ post.twitter_description if post.twitter_description else post.excerpt }}">
+
+{% if post.twitter_image %}
+<meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + post.twitter_image, _external=True) }}">
+{% elif post.featured_image %}
+<meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + post.featured_image, _external=True) }}">
+{% endif %}
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ post.title }}",
+  {% if post.featured_image %}
+  "image": "{{ url_for('static', filename='uploads/' + post.featured_image, _external=True) }}",
+  {% endif %}
+  "author": {
+    "@type": "Person",
+    "name": "{{ post.author.username }}"
+  },
+  {% if post.published_at %}
+  "datePublished": "{{ post.published_at.isoformat() }}",
+  {% endif %}
+  "dateModified": "{{ post.updated_at.isoformat() }}",
+  "description": "{{ post.meta_description if post.meta_description else post.excerpt }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.url }}"
+  }
+}
+</script>
+{% endblock %}
+
+
+
+
+{% block content %}
+<section class="container py-5">
+
+    <a href="{{ url_for('main.blog') }}" class="btn btn-secondary mb-4">&larr; Back to Blog</a>
+
+    <h1 class="fw-bold">{{ post.title }}</h1>
+
+    <p class="text-muted">
+        Posted by {{ post.author.username }}
+        {% if post.published_at %}
+        on {{ post.published_at.strftime('%B %d, %Y') }}
+        {% endif %}
+    </p>
+
+    {% if post.featured_image %}
+    <img loading="lazy" src="{{ url_for('static', filename='uploads/' + post.featured_image) }}" class="img-fluid mb-4"
+        alt="{{ post.title }}">
+    {% endif %}
+
+   
+    <!-- Post Content -->
+    <div class="post-content mt-4">
+        {{ post.content | safe }}
+    </div>
+
+
+    <!-- Like Button -->
+    <button class="like-btn d-inline-flex align-items-center gap-2 border-0 bg-transparent text-danger fw-semibold mt-3"
+        data-post-id="{{ post.id }}" aria-label="Like this post" style="font-size: 18px;">
+        <span style="font-size:22px;">❤️</span>
+        <span class="like-count">{{ post.likes_count or 0 }}</span>
+    </button>
+
+    <button id="copyLinkBtn" class="btn btn-outline-primary">
+        🔗 Copy Link
+    </button>
+    
+    <span id="copyMessage" style="margin-left:10px; color:green;"></span>
+
+    <hr>
+
+    <!-- Comment Form -->
+    <h4>Leave a Comment</h4>
+    <form id="comment-form" class="mb-4">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control") }}
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-2">Submit Comment</button>
+    </form>
+
+    <!-- Comments List -->
+    <h3 class="mt-5">Comments ({{ comments|length }})</h3>
+    <div id="comments-list">
+        {% for comment in comments %}
+        <div class="mb-3 p-3 border rounded">
+            <strong>{{ comment.name }}</strong><br>
+            <small class="text-muted">{{ comment.created_at.strftime('%B %d, %Y %H:%M') }}</small>
+            <p class="mt-2 mb-0">{{ comment.content }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;"></div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ===== Helper: Show Toast =====
+        function showToast(message, type = "success") {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastHTML = `
+            <div class="toast align-items-center text-bg-${type} border-0 shadow-lg mb-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            new bootstrap.Toast(toastContainer.lastElementChild).show();
+        }
+
+        // ===== Like Button =====
+        const likeBtn = document.querySelector(".like-btn");
+
+        if (likeBtn) {
+            likeBtn.addEventListener("click", async function () {
+                const postId = this.dataset.postId;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+                this.disabled = true;
+
+                try {
+                    const response = await fetch(`/post/${postId}/like`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": csrfToken
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.likes !== undefined) {
+                        this.querySelector(".like-count").innerText = data.likes;
+                    }
+
+                } catch (err) {
+                    showToast("Something went wrong. Please try again.", "danger");
+                } finally {
+                    this.disabled = false;
+                }
+            });
+        }
+
+        // ===== Comment Form =====
+        const commentForm = document.getElementById("comment-form");
+        if (commentForm) {
+            commentForm.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const submitBtn = commentForm.querySelector("button[type='submit']");
+                const originalText = submitBtn.innerHTML;
+
+                // Set loading state
+                submitBtn.innerHTML = "Submitting...";
+                submitBtn.disabled = true;
+
+                // Force the browser to repaint before fetch
+                await new Promise(r => requestAnimationFrame(r));
+
+                try {
+                    const formData = new FormData(commentForm);
+                    const response = await fetch("{{ url_for('main.submit_comment', post_id=post.id) }}", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.status === "success") {
+                        commentForm.reset();
+                        showToast("Comment submitted successfully! It will appear after admin approval.", "success");
+                    } else {
+                        showToast(data.message || "Failed to post comment.", "danger");
+                    }
+                } catch (err) {
+                    showToast("Something went wrong. Please try again.", "danger");
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+    });
+</script>
+
+<script>
+    document.getElementById("copyLinkBtn").addEventListener("click", function () {
+        const url = window.location.href;
+
+        navigator.clipboard.writeText(url).then(function () {
+            const message = document.getElementById("copyMessage");
+            message.textContent = "Link copied!";
+
+            setTimeout(() => {
+                message.textContent = "";
+            }, 2000);
+        }).catch(function (err) {
+            alert("Failed to copy link");
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'general/base.html' %}
+
+{% block title %}Admin Login{% endblock %}
+{% block style %}
+{{ super() }}
+<style>
+    
+
+    .content {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #1b2140, #2f3a75);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 420px;
+        padding: 40px;
+        border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .login-card h3 {
+        margin: 0 0 5px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1b2140;
+        text-align: center;
+    }
+
+    .login-card p {
+        margin: 0 0 30px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+    }
+
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 6px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px 14px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #2f3a75;
+        box-shadow: 0 0 0 3px rgba(47, 58, 117, 0.15);
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        background: #1b2140;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    button:hover {
+        background: #2f3a75;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(27, 33, 64, 0.3);
+    }
+
+    .flash {
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .flash-success {
+        background: #e6f9f0;
+        color: #0f5132;
+        border: 1px solid #badbcc;
+    }
+
+    .flash-danger {
+        background: #fde8e8;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+    }
+
+    .flash-warning {
+        background: #fff3cd;
+        color: #664d03;
+        border: 1px solid #ffecb5;
+    }
+
+    .password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 38%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+}
+</style>
+{% endblock style %}
+
+{% block content %}
+
+<div class="content">
+
+    <div class="login-card">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <h3>Admin Login</h3>
+        <p>Access your dashboard securely</p>
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <label>Username</label>
+            {{ form.username(placeholder="Enter your username") }}
+
+            <label>Password</label>
+            <div class="password-wrapper">
+                {{ form.password(id="password", placeholder="Enter your password") }}
+            
+                <span class="toggle-password" onclick="togglePassword()">
+                    <!-- Eye (Visible) -->
+                    <svg id="eyeOpen" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+            
+                    <!-- Eye Hidden (clean slash through center) -->
+                    <svg id="eyeClosed" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                        <path d="M3 3l18 18" />
+                        <path d="M10.6 10.6a3 3 0 004.24 4.24" />
+                        <path d="M9.88 5.1A9.77 9.77 0 0112 5c6 0 10 7 10 7a17.6 17.6 0 01-2.06 2.94" />
+                        <path d="M6.1 6.1A17.6 17.6 0 002 12s4 7 10 7c1.06 0 2.06-.15 3-.43" />
+                    </svg>
+                </span>      
+            </div>
+            {{ form.submit(
+            value="Login",
+            class="btn btn-primary w-100",
+            data_loading_text="Logging in..."        ) }}
+        </form>
+
+    </div>
+    {% endblock content %}
+
+</div>
+
+{% block js %}
+<script>
+    function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const eyeOpen = document.getElementById("eyeOpen");
+        const eyeClosed = document.getElementById("eyeClosed");
+
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            eyeOpen.style.display = "none";
+            eyeClosed.style.display = "inline";
+        } else {
+            passwordField.type = "password";
+            eyeOpen.style.display = "inline";
+            eyeClosed.style.display = "none";
+        }
+    }
+</script>
+{% endblock js %}

@@ -1,0 +1,209 @@
+
+    {% extends "base.html" %}
+
+    {% block style %}
+    {{ super() }}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+
+        
+
+        main {
+            padding: 20px;
+            margin: auto;
+        }
+
+        article {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #0B1F3B;
+        }
+
+        /* p {
+            color: #333;
+        } */
+
+        a {
+            text-decoration: none;
+            color: #1E90FF;
+        }
+
+        
+    </style>
+{% endblock style %}
+
+
+{% block content %}
+<body>
+    
+    <main>
+
+        <!-- Breadcrumb -->
+        <section class="bg-light py-3 border-bottom">
+            <div class="container-fluid text-center small">
+                <a href="/" class="text-danger fw-semibold text-decoration-none">
+                    Vertex Prime Digital | Website design & development company in Lagos, Nigeria
+                </a>
+                <span class="mx-2">></span>
+                <span class="text-muted">Blog</span>
+            </div>
+        </section>
+        
+        <!-- Blog Hero Section -->
+       
+          
+        <section class="py-5 bg-white d-flex align-items-center" style="min-height: 300px;">
+            <div class="container-fluid text-center">
+                <h1 class="fw-bold mb-3" style="font-size:60px; color:#1b2140; letter-spacing:-1px;">
+                    Our Blog Posts
+                </h1>
+        
+                <p class="fs-5 text-secondary mx-auto" style="max-width:700px;">
+                    Check out the resources below for more proof on how we help
+                    brands grow to their fullest potential.
+                </p>
+            </div>
+        </section>
+        
+        <section class="container-fluid py-5">
+            <div class="row">
+        
+                {% if posts %}
+                {% for post in posts.items %}
+                <div class="col-md-4 mb-5">
+                    <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none text-dark">
+                    
+                        <div class="card border-0 shadow-sm h-100">
+                    
+                            {% if post.featured_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + post.featured_image) }}" alt="{{ post.title }}"
+                                class="blog-banner" loading="eager" decoding="async" fetchpriority="high" width="1200" height="600">
+                            {% endif %}
+                    
+                            <div class="card-body">
+                    
+                                {% if post.category %}
+                                <small class="text-uppercase text-danger fw-bold">
+                                    {{ post.category.name }}
+                                </small>
+                                {% endif %}
+                    
+                                <h5 class="fw-bold mt-2">
+                                    {{ post.title }}
+                                </h5>
+                    
+                                {% if post.excerpt %}
+                                <p class="text-muted blog-excerpt">
+                                    {{ post.excerpt }}
+                                </p>
+                                {% endif %}
+                    
+                                <ul class="list-inline text-secondary small mb-2">
+                                    {% if post.reading_time %}
+                                    <li class="list-inline-item">⏱ {{ post.reading_time }} min read</li>
+                                    {% endif %}
+                                    <li class="list-inline-item">
+                                        <span class="like-btn" data-id="{{ post.id }}" style="cursor:pointer;">
+                                            ❤️ <span id="likes-{{ post.id }}">{{ post.likes_count or 0 }}</span>
+                                        </span> likes                               
+                                    </li>
+                                    <li class="list-inline-item">👁 {{ post.views or 0 }} views</li>
+                                    {% if post.is_featured %}
+                                    {{ post.comments|length }} comments
+                                    <li class="list-inline-item">
+                                        <span class="badge bg-success">Featured</span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                    
+                                <small class="text-secondary d-block">
+                                    Posted by {{ post.author.username }}
+                                    on {{ post.published_at.strftime('%B %d, %Y') if post.published_at else 'Not published yet' }}
+                                </small>
+                    
+                            </div>
+                        </div>             
+                    </a>
+        
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        No posts available yet. Check back later.
+                    </div>
+                </div>
+                {% endif %}
+        
+            </div>
+            </section>
+          
+    </main>
+
+    <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+    
+            {% if posts.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num) }}">
+                    Previous
+                </a>
+            </li>
+            {% endif %}
+    
+            {% for page_num in posts.iter_pages() %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == posts.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.blog', page=page_num) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+    
+            {% if posts.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num) }}">
+                    Next
+                </a>
+            </li>
+            {% endif %}
+    
+        </ul>
+    </nav>    
+</body>
+{% endblock %}
+
+{% block js %}
+<script>
+    document.querySelectorAll(".like-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            const postId = this.dataset.id;
+
+            fetch(`/like-post/${postId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`likes-${postId}`).textContent = data.likes;
+                });
+        });
+    });
+</script>
+{% endblock %}
+

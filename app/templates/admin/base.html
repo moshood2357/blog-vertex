@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Default Title (Fallback) -->
+    <title>{% block title %}Vertex Prime Digital Blog{% endblock %}</title>
+
+    {% block meta %}{% endblock meta %}
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
+    
+    <link href="{{ url_for('static', filename='css/style.css')}}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/fontawesome/css/all.min.css')}}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
+
+
+    {% block style %}
+    <style>
+         * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        }
+
+        header {
+            background: #0B1F3B;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        footer {
+            background: #0B1F3B;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+    </style>
+    {% endblock %}
+</head>
+
+
+<body>
+    <header>
+        <h1>Vertex Prime Digital Blog</h1>
+        <p>Latest posts from our team</p>
+        <div style="top:20px; right:20px; z-index:1000; display:flex; gap:10px;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="toast align-items-center text-bg-{{ category }} border-0 shadow-lg mb-2" role="alert"
+                aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+        
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+        
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <form action="{{ url_for('admin.logout') }}" method="POST"
+                style="display:inline; top: 20px; right:40px; z-index:1000; position:absolute;">
+                {{ logout_form.hidden_tag() }}
+                <button type="submit" class="btn btn-danger" data-loading-text="Logging out...">
+                    Logout
+                </button>
+                <!-- Go Home button -->
+                <a href="{{ url_for('main.blog') }}" class="btn btn-outline-primary btn-sm me-2">Go Home</a>
+            </form>
+        
+            </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+
+
+
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+           
+            <p>© {{ now.year }} Vertex Prime Digital. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+
+    <!--  JS -->
+    <script src="{{url_for('static', filename='bootstrap/js/bootstrap.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
+
+{% block js %}{% endblock js %}
