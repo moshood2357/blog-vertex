@@ -49,7 +49,7 @@ def post_detail(slug):
             name=form.name.data,
             email=form.email.data,
             content=form.content.data,
-            is_approved=False  # IMPORTANT: moderation enabled
+            is_approved=False
         )
 
         db.session.add(comment)
@@ -58,11 +58,24 @@ def post_detail(slug):
         flash("Comment submitted for approval.", "success")
         return redirect(url_for("main.post_detail", slug=post.slug))
 
-    # Only show approved comments
+    # Approved comments
     approved_comments = (
         Comment.query
         .filter(Comment.post_id == post.id, Comment.is_approved.is_(True))
         .order_by(Comment.created_at.desc())
+        .all()
+    )
+    # =========================
+    # RELATED POSTS
+    # =========================
+    related_posts = (
+        Post.query
+        .filter(
+            Post.status == "published",
+            Post.id != post.id
+        )
+        .order_by(Post.published_at.desc())
+        .limit(3)
         .all()
     )
 
@@ -70,8 +83,11 @@ def post_detail(slug):
         "main/post_detail.html",
         post=post,
         form=form,
-        comments=approved_comments
+        comments=approved_comments,
+        related_posts=related_posts
     )
+
+
 
 
 # =========================

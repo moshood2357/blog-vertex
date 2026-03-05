@@ -147,6 +147,46 @@
         </div>
         {% endfor %}
     </div>
+
+
+
+    <!-- related posts -->
+    {% if related_posts %}
+    <section class="mt-5">
+        <h3 class="fw-bold mb-4">Related Posts</h3>
+    
+        <div class="row">
+            {% for related in related_posts %}
+            <div class="col-md-4 mb-4">
+    
+                <div class="card h-100 shadow-sm">
+    
+                    {% if related.featured_image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ related.featured_image) }}" class="card-img-top"
+                        alt="{{ related.title }}">
+                    {% endif %}
+    
+                    <div class="card-body">
+    
+                        <h5 class="card-title">
+                            <a href="{{ url_for('main.post_detail', slug=related.slug) }}">
+                                {{ related.title }}
+                            </a>
+                        </h5>
+    
+                        <p class="text-muted">
+                            {{ related.excerpt[:120] }}...
+                        </p>
+    
+                    </div>
+    
+                </div>
+    
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 </section>
 
 <!-- Toast Container -->
