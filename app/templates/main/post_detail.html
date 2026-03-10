@@ -150,40 +150,92 @@
 
 
 
-    <!-- related posts -->
     {% if related_posts %}
     <section class="mt-5">
         <h3 class="fw-bold mb-4">Related Posts</h3>
     
         <div class="row">
-            {% for related in related_posts %}
-            <div class="col-md-4 mb-4">
-    
-                <div class="card h-100 shadow-sm">
-    
-                    {% if related.featured_image %}
-                    <img src="{{ url_for('static', filename='uploads/' ~ related.featured_image) }}" class="card-img-top"
-                        alt="{{ related.title }}">
-                    {% endif %}
-    
-                    <div class="card-body">
-    
-                        <h5 class="card-title">
-                            <a href="{{ url_for('main.post_detail', slug=related.slug) }}">
-                                {{ related.title }}
-                            </a>
-                        </h5>
-    
-                        <p class="text-muted">
-                            {{ related.excerpt[:120] }}...
-                        </p>
-    
-                    </div>
-    
+            <div class="row">
+            
+                {% if related_posts %}
+                {% for related in related_posts %}
+                <div class="col-md-4 mb-5">
+            
+                    <a href="{{ url_for('main.post_detail', slug=related.slug) }}" class="text-decoration-none text-dark">
+            
+                        <div class="card border-0 shadow-sm h-100">
+            
+                            {% if related.featured_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + related.featured_image) }}"
+                                alt="{{ related.title }}" class="blog-banner" loading="lazy" decoding="async" width="1200"
+                                height="600">
+                            {% endif %}
+            
+                            <div class="card-body">
+            
+                                {% if related.category %}
+                                <small class="text-uppercase text-danger fw-bold">
+                                    {{ related.category.name }}
+                                </small>
+                                {% endif %}
+            
+                                <h5 class="fw-bold mt-2">
+                                    {{ related.title }}
+                                </h5>
+            
+                                {% if related.excerpt %}
+                                <p class="text-muted blog-excerpt">
+                                    {{ related.excerpt }}
+                                </p>
+                                {% endif %}
+            
+                                <ul class="list-inline text-secondary small mb-2">
+            
+                                    {% if related.reading_time %}
+                                    <li class="list-inline-item">
+                                        ⏱ {{ related.reading_time }} min read
+                                    </li>
+                                    {% endif %}
+            
+                                    <li class="list-inline-item">
+                                        ❤️ {{ related.likes_count or 0 }} likes
+                                    </li>
+            
+                                    <li class="list-inline-item">
+                                        👁 {{ related.views or 0 }} views
+                                    </li>
+            
+                                    {% if related.is_featured %}
+                                    <li class="list-inline-item">
+                                        <span class="badge bg-success">Featured</span>
+                                    </li>
+                                    {% endif %}
+            
+                                </ul>
+            
+                                <small class="text-secondary d-block">
+                                    Posted by {{ related.author.username }}
+                                    on {{ related.published_at.strftime('%B %d, %Y') if related.published_at else 'Not published
+                                    yet' }}
+                                </small>
+            
+                            </div>
+            
+                        </div>
+            
+                    </a>
+            
                 </div>
-    
+                {% endfor %}
+            
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        No related posts available.
+                    </div>
+                </div>
+                {% endif %}      
             </div>
-            {% endfor %}
         </div>
     </section>
     {% endif %}
