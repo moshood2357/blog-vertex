@@ -87,33 +87,37 @@
         <p class="fs-6 text-secondary mx-auto" style="max-width:700px;">
             Manage your blog posts below. Click the buttons to create a new post or compose a newsletter.
         </p>
-
-        <!-- Buttons side by side -->
-        <div class="d-flex justify-content-center gap-3 mt-3">
+        <!-- Responsive Buttons -->
+        <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+        
             <a href="{{ url_for('admin.create_post') }}" class="btn btn-primary position-relative">
                 + Create New Post
             </a>
         
             <a href="{{ url_for('admin.compose_newsletter') }}" class="btn btn-success position-relative">
+        
                 Compose Newsletter
+        
                 {% if subscriber_count %}
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light text-dark">
                     {{ subscriber_count }}
                     <span class="visually-hidden">active subscribers</span>
                 </span>
                 {% endif %}
+        
             </a>
-            
+        
             <a href="{{ url_for('admin.manage_comments') }}" class="btn btn-outline-danger position-relative">
+        
                 Manage Comments
-            
+        
                 {% if pending_comments > 0 %}
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                     {{ pending_comments }}
                 </span>
-                {% endif %}    
-            </a>
-        </div>
+                {% endif %}
+        
+            </a>  </div>
 </section>
 
 <!-- Posts Section -->

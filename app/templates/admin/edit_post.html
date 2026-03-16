@@ -1,6 +1,7 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
+{{ ckeditor.load() }}
 <div class="container mt-4">
     <h2 class="mb-4">Edit Post: {{ post.title }}</h2>
     <!-- Toast Container -->
@@ -48,6 +49,8 @@
         <div class="mb-3">
             {{ form.content.label(class="form-label") }}
             {{ form.content(class="form-control", rows=10) }}
+            {{ ckeditor.config(name='content') }}
+
         </div>
 
         <!-- Category -->
