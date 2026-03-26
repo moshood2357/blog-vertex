@@ -4,6 +4,7 @@ from app.models import Post, Comment, NewsletterSubscriber
 from app.extensions import db
 from app.forms import CommentForm, NewsletterSignupForm
 from datetime import datetime
+from email_validator import validate_email, EmailNotValidError
 
 
 # =========================
@@ -124,22 +125,48 @@ def like_post(post_id):
 def submit_comment(post_id):
     post = Post.query.get_or_404(post_id)
 
-    name = request.form.get("name")
-    email = request.form.get("email")
-    content = request.form.get("content")
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    content = request.form.get("content", "").strip()
 
+    # REQUIRED FIELD CHECK
     if not name or not email or not content:
-        return jsonify({"status": "error", "message": "All fields are required."})
+        return jsonify({
+            "status": "error",
+            "message": "All fields are required."
+        })
 
+    # EMAIL VALIDATION (STRONG)
+    try:
+        validate_email(email)
+    except EmailNotValidError:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid email address."
+        })
+
+    # =========================
+    # SAVE COMMENT
+    # =========================
     comment = Comment(
         post_id=post.id,
         name=name,
         email=email,
         content=content,
-        is_approved=False  # Moderation enabled
+        is_approved=False
     )
 
     db.session.add(comment)
+
+    # =========================
+    # SAVE TO NEWSLETTER (AUTO)
+    # =========================
+    existing = NewsletterSubscriber.query.filter_by(email=email).first()
+
+    if not existing:
+        subscriber = NewsletterSubscriber(email=email)
+        db.session.add(subscriber)
+
     db.session.commit()
 
     return jsonify({
@@ -179,3 +206,22 @@ def subscribe_newsletter():
 
     flash("Please enter a valid email.", "danger")
     return redirect(request.referrer or url_for("main.blog"))
+
+
+
+
+@main.route("/unsubscribe")
+def unsubscribe():
+    email = request.args.get("email")
+
+    if not email:
+        return "Invalid request", 400
+
+    subscriber = NewsletterSubscriber.query.filter_by(email=email).first()
+
+    if subscriber:
+        db.session.delete(subscriber)
+        db.session.commit()
+        return "You have been unsubscribed successfully."
+
+    return "Email not found."

@@ -14,8 +14,14 @@ from app.forms import PostForm, NewsletterForm, DeleteForm, LogoutForm, LoginFor
 from app.extensions import db
 from app.models import Comment, NewsletterSubscriber, Post, Category, Admin
 from app.newsletter.services import get_active_subscribers, send_new_post_notification
-from app import mail
-from flask_mail import Message
+# from app import mail
+# from flask_mail import Message
+
+from app.services.brevo_email import send_email
+from app.newsletter.utils import generate_unsubscribe_token
+# from flask_mail import Message
+# from app import mail
+
 
 
 
@@ -249,55 +255,66 @@ def delete_post(post_id):
 # =========================
 # COMPOSE NEWSLETTER    
 # =========================
-from app.newsletter.utils import generate_unsubscribe_token
-from flask_mail import Message
-from app import mail
 
 @admin.route("/newsletter/compose", methods=["GET", "POST"])
 @login_required
 def compose_newsletter():
     form = NewsletterForm()
+
     if form.validate_on_submit():
         subject = form.subject.data
         content = form.content.data
-        subscribers = get_active_subscribers()  # returns list of active NewsletterSubscriber objects
+        subscribers = get_active_subscribers()
 
         if not subscribers:
-            flash("No active subscribers to send newsletter.", "warning")
+            flash("No active subscribers.", "warning")
             return redirect(url_for("admin.dashboard"))
 
-        failed_emails = []
+        failed = []
 
         for subscriber in subscribers:
-            # Generate secure unsubscribe token
-            token = generate_unsubscribe_token(subscriber.email)
-            unsubscribe_link = url_for('newsletter.unsubscribe', token=token, _external=True)
-
-            html_content = f"""
-            {content}
-            <p>Click <a href="{unsubscribe_link}">here</a> to unsubscribe.</p>
-            """
-
             try:
-                msg = Message(
-                    subject=subject,
-                    recipients=[subscriber.email], 
-                    html=html_content
+                token = generate_unsubscribe_token(subscriber.email)
+                unsubscribe_link = url_for(
+                    'newsletter.unsubscribe',
+                    token=token,
+                    _external=True
                 )
-                mail.send(msg)
-            except Exception as e:
-                print(f"Failed to send email to {subscriber.email}: {e}")
-                failed_emails.append(subscriber.email)
 
-        if failed_emails:
-            flash(f"Newsletter sent, but failed for {len(failed_emails)} emails.", "warning")
+                html_content = f"""
+                {content}
+                <p>
+                    <a href="{unsubscribe_link}">
+                        Unsubscribe
+                    </a>
+                </p>
+                """
+
+                status, res = send_email(
+                    subscriber.email,
+                    subject,
+                    html_content
+                )
+
+                if status not in (200, 201):
+                    failed.append(subscriber.email)
+                    print("❌", res)
+                else:
+                    print(f"✅ Sent to {subscriber.email}")
+
+            except Exception as e:
+                print(f"❌ Error: {e}")
+                failed.append(subscriber.email)
+
+        if failed:
+            flash(f"Sent with some failures: {failed}", "warning")
+            
         else:
-            flash(f"Newsletter sent successfully to {len(subscribers)} subscribers!", "success")
+            flash(f"Sent to {len(subscribers)} subscribers!", "success")
 
         return redirect(url_for("admin.dashboard"))
 
     return render_template("admin/compose_newsletter.html", form=form)
-
 
 @admin.route("/comments")
 @login_required

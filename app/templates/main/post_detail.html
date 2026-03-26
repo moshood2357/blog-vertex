@@ -135,6 +135,9 @@
 
         <button type="submit" class="btn btn-primary mt-2">Submit Comment</button>
     </form>
+    <small class="text-muted">
+        By commenting, you agree to receive updates and newsletters.
+    </small>
 
     <!-- Comments List -->
     <h3 class="mt-5">Comments ({{ comments|length }})</h3>
@@ -146,6 +149,8 @@
             <p class="mt-2 mb-0">{{ comment.content }}</p>
         </div>
         {% endfor %}
+
+        
     </div>
 
 

@@ -6,6 +6,6 @@ class Config:
         "mysql+pymysql://root@localhost/blog_db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     BLOG_NAME = "My Awesome Blog"
-    SITE_URL = "https://yourdomain.com"
+    SITE_URL = "https://vertexprimedigital.com"
     # Admin credentials (for simplicity, using environment variables)
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME") or "admin"
