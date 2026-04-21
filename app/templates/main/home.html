@@ -1,242 +1,217 @@
 {% extends "base.html" %}
 
+{% block title %}Vertex Prime Digital | Web design & development and custom digital solutions{% endblock %}
+
+{% block meta %}
+<meta name="description"
+    content="Discover expert insights on web development, SEO, digital strategy, IT support, and business growth from Vertex Prime Digital, a leading web design and development company in Lagos, Nigeria.">
+
+<meta name="keywords"
+    content="web design Lagos, website development Nigeria, SEO services Lagos, digital marketing, IT support, ecommerce development, UI UX design, business growth, Vertex Prime Digital">
+
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ url_for('main.blog', _external=True) }}">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Vertex Prime Digital Blog | Web Design, SEO & Digital Growth Insights">
+<meta property="og:description"
+    content="Explore the Vertex Prime Digital blog for expert advice on website development, SEO, digital strategy, ecommerce, and business growth in Lagos and beyond.">
+<meta property="og:url" content="{{ url_for('main.blog', _external=True) }}">
+<meta property="og:site_name" content="Vertex Prime Digital">
+<meta property="og:image" content="{{ url_for('static', filename='images/tagline3.png', _external=True) }}">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vertex Prime Digital Blog | Web Design, SEO & Digital Growth Insights">
+<meta name="twitter:description"
+    content="Explore the Vertex Prime Digital blog for expert advice on website development, SEO, digital strategy, ecommerce, and business growth in Lagos and beyond.">
+<meta name="twitter:image" content="{{ url_for('static', filename='images/tagline3.png', _external=True) }}">
+<meta name="twitter:site" content="@VertexPrimeDigital">
+
+<!-- Structured Data (JSON-LD for Blog) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Vertex Prime Digital Blog",
+  "url": "{{ url_for('main.blog', _external=True) }}",
+  "description": "Explore expert insights on website development, SEO, digital strategy, ecommerce, and business growth from Vertex Prime Digital.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Vertex Prime Digital",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ url_for('static', filename='images/tagline3.png', _external=True) }}"
+    }
+  },
+  "blogPost": [
+    {% for post in posts.items %}
+    {
+      "@type": "BlogPosting",
+      "headline": "{{ post.title | escape }}",
+      "image": "{{ url_for('static', filename='uploads/' + post.featured_image, _external=True) if post.featured_image else url_for('static', filename='images/tagline3.png', _external=True) }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ post.author.username }}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Vertex Prime Digital",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ url_for('static', filename='images/tagline3.png', _external=True) }}"
+        }
+      },
+      "datePublished": "{{ post.published_at.isoformat() if post.published_at else '' }}",
+      "dateModified": "{{ post.updated_at.isoformat() if post.updated_at else (post.published_at.isoformat() if post.published_at else '') }}",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ url_for('main.post_detail', slug=post.slug, _external=True) }}"
+      },
+      "url": "{{ url_for('main.post_detail', slug=post.slug, _external=True) }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+
 {% block content %}
-
 <!-- Breadcrumb -->
-
 <section class="bg-light py-3 border-bottom mb-4">
-
     <div class="container text-center small">
-
         <a href="/" class="text-danger fw-semibold text-decoration-none">
-            Prime Edge
+            Vertex Prime Digital | Web design & development and custom digital solutions
         </a>
-
-        <span class="mx-2">></span>
-
+        <span class="mx-2">&gt;</span>
         <span class="text-muted">Blog</span>
-
     </div>
-
 </section>
 
-
 <!-- Hero Section -->
-
 <section class="py-5 bg-white text-center">
-
     <div class="container">
-
         <h1 class="blog-hero-title fw-bold mb-3">
             Our Blog Posts
         </h1>
-
         <p class="fs-5 text-secondary mx-auto" style="max-width:700px;">
             Check out the resources below for more proof on how we help
             brands grow to their fullest potential.
         </p>
-
     </div>
-
 </section>
 
-
 <!-- Blog Grid -->
-
 <section class="container py-5">
-
     <div class="row">
-
-        {% if posts %}
-
+        {% if posts and posts.items %}
         {% for post in posts.items %}
-
         <div class="col-12 col-sm-6 col-lg-4 mb-4">
-
-            <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none text-dark">
-
-                <div class="card h-100 border-0 shadow-sm">
-
+            <article class="card h-100 border-0 shadow-sm overflow-hidden">
+                <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none text-dark">
                     {% if post.featured_image %}
-
-                    <img src="{{ url_for('static', filename='uploads/' + post.featured_image) }}" class="blog-banner"
-                        alt="{{ post.title }}" loading="lazy">
-
+                    <img src="{{ url_for('static', filename='uploads/' + post.featured_image) }}"
+                        class="blog-banner w-100" alt="{{ post.title }}" loading="lazy">
                     {% endif %}
 
                     <div class="card-body">
-
                         {% if post.category %}
-
                         <small class="text-uppercase text-danger fw-bold">
                             {{ post.category.name }}
                         </small>
-
                         {% endif %}
 
-                        <h5 class="fw-bold mt-2">
+                        <h2 class="fw-bold mt-2 h5">
                             {{ post.title }}
-                        </h5>
+                        </h2>
 
                         {% if post.excerpt %}
-
                         <p class="text-muted blog-excerpt">
                             {{ post.excerpt }}
                         </p>
-
                         {% endif %}
-
-                        <ul class="list-inline text-secondary small mb-2">
-
-                            {% if post.reading_time %}
-                            <li class="list-inline-item">
-                                ⏱ {{ post.reading_time }} min read
-                            </li>
-                            {% endif %}
-
-                            <li class="list-inline-item">
-
-                                <span class="like-btn" data-id="{{ post.id }}" style="cursor:pointer;">
-                                    ❤️ <span id="likes-{{ post.id }}">{{ post.likes_count or 0 }}</span>
-                                </span>
-
-                                likes
-
-                            </li>
-
-                            <li class="list-inline-item">
-                                👁 {{ post.views or 0 }} views
-                            </li>
-
-                            {% if post.is_featured %}
-
-                            <li class="list-inline-item">
-                                <span class="badge bg-success">Featured</span>
-                            </li>
-
-                            {% endif %}
-
-                        </ul>
-
-                        <small class="text-secondary d-block">
-
-                            Posted by {{ post.author.username }}
-
-                            on
-
-                            {{ post.published_at.strftime('%B %d, %Y') if post.published_at else 'Not published yet' }}
-
-                        </small>
-
                     </div>
+                </a>
 
-                </div>
+                <footer class="card-footer bg-white border-0 pt-0 px-3 pb-3">
+                    <ul class="list-inline text-secondary small mb-2">
+                        {% if post.reading_time %}
+                        <li class="list-inline-item">⏱ {{ post.reading_time }} min read</li>
+                        {% endif %}
+                        <li class="list-inline-item">
+                            <span class="like-btn" data-id="{{ post.id }}" style="cursor:pointer;">
+                                ❤️ <span id="likes-{{ post.id }}">{{ post.likes_count or 0 }}</span>
+                            </span>
+                            likes
+                        </li>
+                        <li class="list-inline-item">👁 {{ post.views or 0 }} views</li>
+                        {% if post.is_featured %}
+                        <li class="list-inline-item"><span class="badge bg-success">Featured</span></li>
+                        {% endif %}
+                    </ul>
 
-            </a>
-
+                    <small class="text-secondary d-block">
+                        Posted by {{ post.author.username }}
+                        on
+                        {{ post.published_at.strftime('%B %d, %Y') if post.published_at else 'Not published yet' }}
+                    </small>
+                </footer>
+            </article>
         </div>
-
         {% endfor %}
-
         {% else %}
-
         <div class="col-12">
-
             <div class="alert alert-info text-center">
                 No posts available yet. Check back later.
             </div>
-
         </div>
-
         {% endif %}
-
     </div>
-
 </section>
 
-
 <!-- Pagination -->
+<section class="container pb-5">
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if posts.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num) }}">Previous</a>
+            </li>
+            {% endif %}
 
-<nav class="mt-5">
+            {% for page_num in posts.iter_pages() %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == posts.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('main.blog', page=page_num) }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
 
-    <ul class="pagination justify-content-center">
-
-        {% if posts.has_prev %}
-
-        <li class="page-item">
-
-            <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num) }}">
-                Previous
-            </a>
-
-        </li>
-
-        {% endif %}
-
-        {% for page_num in posts.iter_pages() %}
-
-        {% if page_num %}
-
-        <li class="page-item {% if page_num == posts.page %}active{% endif %}">
-
-            <a class="page-link" href="{{ url_for('main.blog', page=page_num) }}">
-                {{ page_num }}
-            </a>
-
-        </li>
-
-        {% endif %}
-
-        {% endfor %}
-
-        {% if posts.has_next %}
-
-        <li class="page-item">
-
-            <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num) }}">
-                Next
-            </a>
-
-        </li>
-
-        {% endif %}
-
-    </ul>
-
-</nav>
+            {% if posts.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</section>
 
 {% endblock %}
 
-
 {% block js %}
-
 <script>
-
     document.querySelectorAll(".like-btn").forEach(button => {
-
-        button.addEventListener("click", function () {
-
+        button.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             const postId = this.dataset.id;
-
-            fetch(`/like-post/${postId}`, {
-
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-
-            })
-
+            fetch(`/like-post/${postId}`, { method: "POST", headers: { "Content-Type": "application/json" } })
                 .then(res => res.json())
-
-                .then(data => {
-                    document.getElementById(`likes-${postId}`).textContent = data.likes;
-                });
-
+                .then(data => { document.getElementById(`likes-${postId}`).textContent = data.likes; })
+                .catch(error => { console.error("Error liking post:", error); });
         });
-
     });
-
 </script>
-
 {% endblock %}

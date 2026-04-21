@@ -2,7 +2,9 @@ import os
 import uuid
 from datetime import datetime
 
-from flask import render_template, redirect, url_for, flash, request, current_app
+import logging
+
+from flask import  render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import check_password_hash
 from PIL import Image
@@ -166,11 +168,22 @@ def create_post():
         db.session.add(post)
         db.session.commit()
 
-        # Send notification only if published
+        #  Send notification safely
         if post.status == "published":
-            send_new_post_notification(post)
+            try:
+                # from app.newsletter.utils import send_new_post_notification
+                with current_app.app_context():
+                    result = send_new_post_notification(post)
+                if result.get("failed"):
+                    flash(f"Post created but failed to send notifications to: {result['failed']}", "warning")
+                else:
+                    flash("Post created and notifications sent successfully!", "success")
+            except Exception:
+                logging.exception("Failed to send post notifications")
+                flash("Post created but failed to send notifications.", "warning")
+        else:
+            flash("Post created successfully!", "success")
 
-        flash("Post created successfully!", "success")
         return redirect(url_for("admin.dashboard"))
 
     return render_template("admin/create_post.html", form=form)
@@ -255,7 +268,6 @@ def delete_post(post_id):
 # =========================
 # COMPOSE NEWSLETTER    
 # =========================
-
 @admin.route("/newsletter/compose", methods=["GET", "POST"])
 @login_required
 def compose_newsletter():
@@ -272,45 +284,46 @@ def compose_newsletter():
 
         failed = []
 
-        for subscriber in subscribers:
-            try:
-                token = generate_unsubscribe_token(subscriber.email)
-                unsubscribe_link = url_for(
-                    'newsletter.unsubscribe',
-                    token=token,
-                    _external=True
-                )
+        # Wrap in app context for safe url_for(_external=True)
+        with current_app.app_context():
+            for subscriber in subscribers:
+                try:
+                    if not subscriber.email:
+                        failed.append("Invalid email")
+                        continue
 
-                html_content = f"""
-                {content}
-                <p>
-                    <a href="{unsubscribe_link}">
-                        Unsubscribe
-                    </a>
-                </p>
-                """
+                    token = generate_unsubscribe_token(subscriber.email)
+                    unsubscribe_link = url_for(
+                        'newsletter.unsubscribe',
+                        token=token,
+                        _external=True
+                    )
 
-                status, res = send_email(
-                    subscriber.email,
-                    subject,
-                    html_content
-                )
+                    html_content = f"""
+                    {content}
+                    <p>
+                        <a href="{unsubscribe_link}">Unsubscribe</a>
+                    </p>
+                    """
 
-                if status not in (200, 201):
+                    status, res = send_email(subscriber.email, subject, html_content)
+
+                    if status not in (200, 201):
+                        failed.append(subscriber.email)
+                        logging.warning(f"Failed to send to {subscriber.email}: {res}")
+                    else:
+                        logging.info(f"Sent to {subscriber.email}")
+
+                except Exception as e:
+                    logging.exception(f"Error sending to {subscriber.email}")
                     failed.append(subscriber.email)
-                    print("❌", res)
-                else:
-                    print(f"✅ Sent to {subscriber.email}")
 
-            except Exception as e:
-                print(f"❌ Error: {e}")
-                failed.append(subscriber.email)
-
+        # Flash summary
+        success_count = len(subscribers) - len(failed)
         if failed:
-            flash(f"Sent with some failures: {failed}", "warning")
-            
+            flash(f"Sent to {success_count} subscribers. Failed: {failed}", "warning")
         else:
-            flash(f"Sent to {len(subscribers)} subscribers!", "success")
+            flash(f"Sent to all {success_count} subscribers!", "success")
 
         return redirect(url_for("admin.dashboard"))
 
@@ -350,3 +363,34 @@ def delete_comment(comment_id):
 
     flash("Comment deleted successfully.", "danger")
     return redirect(url_for("admin.manage_comments"))
+# from flask import render_template, redirect, url_for, flash
+from flask_login import login_required
+from app.admin import admin
+from app.extensions import db
+from app.models import NewsletterSubscriber
+
+# View all subscribers
+@admin.route("/subscribers/emails")
+@login_required
+def view_subscriber_emails():
+    # Fetch full subscriber objects from DB
+    subscribers = NewsletterSubscriber.query.order_by(
+        NewsletterSubscriber.subscribed_at.desc()
+    ).all()
+    
+    return render_template(
+        "admin/subscriber_emails.html",
+        subscribers=subscribers  # pass objects, not strings
+    )
+
+# Delete a subscriber
+@admin.route("/subscribers/<int:subscriber_id>/delete", methods=["POST"])
+@login_required
+def delete_subscriber(subscriber_id):
+    subscriber = NewsletterSubscriber.query.get_or_404(subscriber_id)
+    
+    db.session.delete(subscriber)
+    db.session.commit()
+    
+    flash(f"Subscriber {subscriber.email} deleted successfully.", "success")
+    return redirect(url_for("admin.view_subscriber_emails"))

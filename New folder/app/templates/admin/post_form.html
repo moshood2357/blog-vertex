@@ -1,0 +1,43 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div id="flash-container" class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 1055;">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        {{ form.title.label }}
+        {{ form.title(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.slug.label }}
+        {{ form.slug(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.content.label }}
+        {{ form.content(class="form-control", rows=6) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.featured_image.label }}
+        {{ form.featured_image(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.status.label }}
+        {{ form.status(class="form-select") }}
+    </div>
+
+    {{ form.submit(class="btn btn-primary") }}
+</form>

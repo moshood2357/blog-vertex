@@ -1,0 +1,9 @@
+# Enable Passenger
+<IfModule mod_passenger.c>
+    PassengerEnabled on
+    PassengerAppRoot /home/edkrlist/blog.r2systemsolution.co.uk/public
+    PassengerPython /home/edkrlist/virtualenv/blog.r2systemsolution.co.uk/public/3.10/bin/python
+</IfModule>
+
+# Optional: prevent directory listing
+Options -Indexes

@@ -1,0 +1,61 @@
+/* Card Base */
+.card {
+    transition: transform 0.4s ease,
+        box-shadow 0.4s ease,
+        filter 0.3s ease;
+
+    will-change: transform;
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+/* Hover animation (desktop only) */
+@media (hover:hover) {
+    .card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow:
+            0 15px 35px rgba(0, 0, 0, 0.12),
+            0 5px 15px rgba(0, 0, 0, 0.08);
+        filter: brightness(1.03);
+    }
+}
+
+/* Blog Banner Image */
+.blog-banner {
+    width: 100%;
+    height: clamp(200px, 35vw, 320px);
+    object-fit: cover;
+    display: block;
+}
+
+/* Blog excerpt text */
+.blog-excerpt {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+/* Mobile adjustments */
+@media (max-width:768px) {
+
+    .blog-banner {
+        height: 200px;
+    }
+
+    .blog-excerpt {
+        -webkit-line-clamp: 2;
+    }
+
+}
+
+/* Very small phones */
+@media (max-width:480px) {
+
+    .blog-banner {
+        height: 180px;
+    }
+
+}

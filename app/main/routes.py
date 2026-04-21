@@ -185,27 +185,37 @@ def submit_comment(post_id):
 def subscribe_newsletter():
     form = NewsletterSignupForm()
 
+    redirect_url = request.referrer or url_for("main.blog")
+
     if form.validate_on_submit():
         email = form.email.data.strip().lower()
 
         # Honeypot spam protection
         if form.honeypot.data:
-            return redirect(request.referrer or url_for("main.blog"))
+            flash("Invalid submission.", "danger")
+            return redirect(redirect_url)
 
-        existing = NewsletterSubscriber.query.filter_by(email=email).first()
-        if existing:
-            flash("You're already subscribed!", "info")
-            return redirect(request.referrer or url_for("main.blog"))
+        existing_subscriber = NewsletterSubscriber.query.filter_by(email=email).first()
 
-        new_subscriber = NewsletterSubscriber(email=email)
-        db.session.add(new_subscriber)
-        db.session.commit()
+        if existing_subscriber:
+            flash("Email already exists.", "warning")
+            return redirect(redirect_url)
 
-        flash("Subscribed successfully!", "success")
-        return redirect(request.referrer or url_for("main.blog"))
+        try:
+            new_subscriber = NewsletterSubscriber(email=email)
+            db.session.add(new_subscriber)
+            db.session.commit()
 
-    flash("Please enter a valid email.", "danger")
-    return redirect(request.referrer or url_for("main.blog"))
+            flash("Subscribed successfully!", "success")
+
+        except Exception:
+            db.session.rollback()
+            flash("Something went wrong. Please try again.", "danger")
+
+        return redirect(redirect_url)
+
+    flash("Email Address already exist.", "danger")
+    return redirect(redirect_url)
 
 
 

@@ -5,7 +5,7 @@
   <url>
     <loc>{{ page.loc }}</loc>
     <lastmod>{{ page.lastmod }}</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>{{ page.changefreq }}</changefreq>
     <priority>{{ page.priority }}</priority>
   </url>
 {% endfor %}

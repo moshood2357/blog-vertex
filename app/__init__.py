@@ -97,4 +97,7 @@ def create_app(config_class="config.Config"):
         from app.scheduler import start_scheduler
         start_scheduler(app)
 
+
+    print(app.url_map)
+    
     return app
