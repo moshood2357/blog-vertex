@@ -113,7 +113,7 @@
                 <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none text-dark">
                     {% if post.featured_image %}
                     <img src="{{ url_for('static', filename='uploads/' + post.featured_image) }}"
-                        class="blog-banner w-100" alt="{{ post.title }}" loading="lazy">
+                    class="blog-banner w-100" alt="{{ post.title }}" loading="high" decoding="async" fetchpriority="low">
                     {% endif %}
 
                     <div class="card-body">
