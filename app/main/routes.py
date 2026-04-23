@@ -16,7 +16,7 @@ def blog():
         Post.query
         .filter_by(status="published")
         .order_by(Post.published_at.desc())
-        .paginate(page=request.args.get("page", 1, type=int), per_page=3)
+        .paginate(page=request.args.get("page", 1, type=int), per_page=9)
     )
 
     newsletter_form = NewsletterSignupForm()
