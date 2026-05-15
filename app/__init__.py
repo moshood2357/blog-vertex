@@ -76,6 +76,11 @@ def create_app(config_class="config.Config"):
     @app.context_processor
     def inject_logout_form():
         return dict(logout_form=LogoutForm())
+    
+
+    @app.context_processor
+    def inject_config():
+        return dict(config=app.config)
 
     # =========================
     # REGISTER BLUEPRINTS
