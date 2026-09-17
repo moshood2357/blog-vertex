@@ -5,3 +5,5 @@ from .auth_forms import DeleteForm
 from .auth_forms import LogoutForm
 from .auth_forms import LoginForm
 from .actionfform import ActionForm
+from .auth_forms import ForgotPasswordForm
+from .auth_forms import ResetPasswordForm

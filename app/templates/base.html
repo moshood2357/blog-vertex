@@ -2,28 +2,25 @@
 <html lang="en">
 
 <head>
-   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {% block meta %}
-    {% endblock meta %}
-
+    {% block meta %}{% endblock meta %}
 
     <title>{% block title %}Vertex Prime Digital Blog{% endblock %}</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- CSS -->
-    <!-- <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css')}}" rel="stylesheet"> -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link href="{{ url_for('static', filename='css/style.css')}}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/fontawesome/css/all.min.css')}}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
     {% block style %}
     <style>
-        /* Global Reset */
         * {
             box-sizing: border-box;
         }
@@ -32,6 +29,7 @@
         body {
             height: 100%;
             margin: 0;
+            overflow-x: hidden;
         }
 
         body {
@@ -43,7 +41,6 @@
         }
 
         /* Header */
-
         header {
             background: #0B1F3B;
             color: white;
@@ -64,29 +61,144 @@
         }
 
         /* Main */
-
         main {
             flex: 1;
         }
 
         /* Footer */
-
         footer {
             background: #0B1F3B;
             color: white;
-            padding: 40px 20px;
-            text-align: center;
             margin-top: auto;
         }
 
-        /* Newsletter form */
+        .footer-top {
+            padding: 60px 0 40px;
+        }
 
-        footer form input {
-            min-width: 250px;
+        .footer-heading {
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 18px;
+            letter-spacing: 0.3px;
+        }
+
+        .footer-text {
+            color: #9ca3af;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #d1d5db;
+            font-size: 14px;
+        }
+
+        .footer-contact-item i {
+            color: #9ca3af;
+            margin-top: 2px;
+            width: 16px;
+            flex-shrink: 0;
+        }
+
+        .footer-contact-item a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-contact-item a:hover {
+            color: #ffffff;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .footer-social a {
+            color: #d1d5db;
+            font-size: 20px;
+            transition: color 0.2s;
+        }
+
+        .footer-social a:hover {
+            color: #ffffff;
+        }
+
+        /* Newsletter */
+        .footer-newsletter .form-control {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        .footer-newsletter .form-control::placeholder {
+            color: #9ca3af;
+        }
+
+        .footer-newsletter .form-control:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            box-shadow: none;
+        }
+
+        .footer-newsletter .btn-subscribe {
+            background: #1a56db;
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 10px;
+            transition: background 0.2s;
+        }
+
+        .footer-newsletter .btn-subscribe:hover {
+            background: #1648c0;
+        }
+
+        /* Divider */
+        .footer-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+            margin: 0;
+        }
+
+        /* Bottom bar */
+        .footer-bottom {
+            padding: 18px 0;
+            text-align: center;
+            color: #6b7280;
+            font-size: 13px;
         }
 
         /* Images */
-
         img {
             max-width: 100%;
             height: auto;
@@ -94,9 +206,7 @@
         }
 
         /* Mobile adjustments */
-
-        @media(max-width:768px) {
-
+        @media (max-width: 768px) {
             header h1 {
                 font-size: 22px;
             }
@@ -105,120 +215,157 @@
                 font-size: 14px;
             }
 
-            footer {
-                padding: 30px 15px;
+            .footer-top {
+                padding: 40px 0 30px;
             }
-
         }
     </style>
     {% endblock %}
 
     {% if config.GA_MEASUREMENT_ID %}
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config.GA_MEASUREMENT_ID }}"></script>
-    
-    <script>
-        window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
-
-        gtag('js', new Date());
-
-        gtag('config', '{{ config.GA_MEASUREMENT_ID }}');
-    </script>
+    <!-- Google Analytics -->
     {% endif %}
-
 </head>
 
 <body>
 
-    <!-- Header -->
+    <!-- ===== HEADER ===== -->
     <header>
-
         <h1>Vertex Prime Digital Blog</h1>
         <p>Latest posts from our team</p>
-
     </header>
 
-    <!-- Main Content -->
-
-    <main class="container py-5">
-
-        {% block content %}{% endblock %}
-
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <div class="container py-4">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
-    <!-- Footer -->
-
+    <!-- ===== FOOTER ===== -->
     <footer>
+        <div class="footer-top">
+            <div class="container">
+                <div class="row g-5">
 
-        <div class="container">
+                    <!-- Column 1: About + Contact -->
+                    <div class="col-lg-4 col-md-6">
+                        <h5 class="footer-heading">Reach Out to Us</h5>
+                        <p class="footer-text mb-4">
+                            Vertex Prime Digital is a professional website design and web development company in Lagos,
+                            Nigeria helping businesses build high-performance websites, ecommerce platforms, and
+                            SEO-optimized digital solutions that drive growth online.
+                        </p>
 
-            <h5 class="mb-3">Subscribe to our newsletter</h5>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+2349038979339</span>
+                        </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+                        <div class="footer-contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:info@vertexprimedigital.com">info@vertexprimedigital.com</a>
+                        </div>
 
-            <div id="flash-container" class="position-fixed top-0 start-50 translate-middle-x mt-3"
-                style="z-index:1055;">
+                        <div class="footer-contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Lekki, Lagos, Nigeria</span>
+                        </div>
+                    </div>
 
-                {% for category, message in messages %}
+                    <!-- Column 2: Quick Links -->
+                    <div class="col-lg-2 col-sm-6">
+                        <h5 class="footer-heading">Quick Links</h5>
+                        <ul class="footer-links">
+                            <li><a href="/">Home</a></li>
+                            <li><a href="https://vertexprimedigital.com/about-us">About Us</a></li>
+                            <li><a href="https://vertexprimedigital.com/service">Services</a></li>
+                            <li><a href="https://vertexprimedigital.com/contact-us">Contact Us</a></li>
+                            <li><a href="https://vertexprimedigital.com/privacy-policy">Privacy Policy</a></li>
+                        </ul>
+                    </div>
 
-                <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                    <!-- Column 3: Social -->
+                    <div class="col-lg-3 col-sm-6">
+                        <h5 class="footer-heading">Follow Us</h5>
 
-                    {{ message }}
+                        <div class="footer-social">
+                            <a href="https://www.facebook.com/profile.php?id=61587406476323" target="_blank" rel="noopener noreferrer"
+                                aria-label="Visit our Facebook page">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                        
+                            <a href="https://www.instagram.com/vertexprimedigital" target="_blank" rel="noopener noreferrer"
+                                aria-label="Visit our Instagram page">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        
+                            <a href="https://www.linkedin.com/company/vertexprimedigital/?viewAsMember=true" target="_blank"
+                                rel="noopener noreferrer" aria-label="Visit our LinkedIn page">
+                                <i class="fab fa-linkedin"></i>
+                            </a>                  
+                        </div>
+                        
+                        <p class="footer-text">
+                            Stay connected with Vertex Prime Digital for web design &amp; development insights, digital
+                            strategy updates, and industry trends.
+                        </p>
+                    </div>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <!-- Column 4: Newsletter -->
+                    <div class="col-lg-3 col-md-6 footer-newsletter">
+                        <h5 class="footer-heading">Subscribe to our newsletter</h5>
 
-                </div>
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="mb-3">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
 
-                {% endfor %}
+                        <form method="POST" action="{{ url_for('newsletter.subscribe') }}">
+                            {{ form.hidden_tag() }}
 
+                            <div class="mb-3">
+                                {{ form.email(class_="form-control form-control-lg",
+                                placeholder="Enter your email") }}
+                            </div>
+
+                            <div style="display: none;">
+                                {{ form.honeypot }}
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-subscribe">Subscribe</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div><!-- /row -->
+            </div><!-- /container -->
+        </div><!-- /footer-top -->
+
+        <hr class="footer-divider">
+
+        <div class="footer-bottom">
+            <div class="container">
+                Copyright &copy; {{ now.year }} Vertex Prime Digital Ltd. &mdash; Global Web Design &amp; Development
+                Company Based in Lagos, Nigeria
             </div>
-
-            {% endif %}
-            {% endwith %}
-
-            <form action="{{ url_for('main.subscribe_newsletter') }}" method="POST"
-                class="row justify-content-center g-2 mt-4 p-3 bg-light rounded shadow-sm border">
-
-                {{ form.hidden_tag() }}
-
-                <div class="col-12 col-md-6">
-
-                    {{ form.email(class_="form-control form-control-lg", placeholder="Enter your email") }}
-
-                </div>
-
-                <div style="display:none;">
-                    {{ form.honeypot }}
-                </div>
-
-                <div class="col-auto">
-
-                    <button type="submit" class="btn btn-primary btn-lg px-4 w-100">
-                        Subscribe
-                    </button>
-
-                </div>
-
-            </form>
-
-            <p class="mt-4 mb-0">
-
-                © {{ now.year }} Vertex Prime Digital. All rights reserved.
-
-            </p>
-
         </div>
-
     </footer>
 
-    <!-- JS -->
-
-    <!-- <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script> -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     {% block js %}{% endblock js %}

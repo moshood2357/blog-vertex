@@ -1,18 +1,20 @@
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 
 import logging
+import requests
 
 from flask import  render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user, login_user, logout_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from PIL import Image
 
 
 
 from . import admin
-from app.forms import PostForm, NewsletterForm, DeleteForm, LogoutForm, LoginForm, ActionForm
+from app.forms import PostForm, NewsletterForm, DeleteForm, LogoutForm, LoginForm, ActionForm, ForgotPasswordForm, ResetPasswordForm
 from app.extensions import db
 from app.models import Comment, NewsletterSubscriber, Post, Category, Admin
 from app.newsletter.services import get_active_subscribers, send_new_post_notification
@@ -21,10 +23,12 @@ from app.newsletter.services import get_active_subscribers, send_new_post_notifi
 
 from app.services.brevo_email import send_email
 from app.newsletter.utils import generate_unsubscribe_token
+
+
 # from flask_mail import Message
 # from app import mail
 
-
+BREVO_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 # =========================
@@ -96,6 +100,250 @@ def login():
         flash("Invalid username or password", "danger")
 
     return render_template("admin/login.html", form=form)
+
+# ====================================
+# RESET TOKEN GENERATION AND VERIFICATION
+# ====================================
+
+def generate_reset_token(admin_user):
+    token = secrets.token_urlsafe(32)
+
+    admin_user.reset_token = token
+    admin_user.reset_token_expires = datetime.utcnow() + timedelta(minutes=30)
+
+    db.session.commit()
+
+    return token
+
+
+
+def verify_reset_token(token):
+    admin_user = Admin.query.filter_by(reset_token=token).first()
+
+    if not admin_user:
+        return None
+
+    if not admin_user.reset_token_expires:
+        return None
+
+    if datetime.utcnow() > admin_user.reset_token_expires:
+        return None
+
+    return admin_user
+
+
+
+# ===============================
+# FORGOT PASSWORD
+# ===============================
+@admin.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    form = ForgotPasswordForm()
+
+    if current_user.is_authenticated:
+        return redirect(url_for("admin.dashboard"))
+
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+
+        if not email:
+            flash("Please enter your email address.", "danger")
+            return render_template("admin/forgot_password.html", form=form)
+
+        admin_user = Admin.query.filter_by(email=email).first()
+
+        # Always show the same message whether the email exists or not.
+        # This prevents people from discovering the admin email address.
+        if admin_user:
+            token = secrets.token_urlsafe(32)
+
+            admin_user.reset_token = token
+            admin_user.reset_token_expires = (
+                datetime.utcnow() + timedelta(minutes=30)
+            )
+
+            db.session.commit()
+
+            reset_link = url_for(
+                "admin.reset_password",
+                token=token,
+                _external=True
+            )
+
+            api_key = os.getenv("BREVO_API_KEY")
+            sender_email = os.getenv("MAIL_DEFAULT_SENDER")
+
+            if not api_key or not sender_email:
+                print("Missing Brevo configuration")
+                flash(
+                    "Unable to send the reset email right now. Please try again later.",
+                    "danger"
+                )
+                return render_template(
+                    "admin/forgot_password.html",
+                    form=form
+                )
+
+            headers = {
+                "accept": "application/json",
+                "api-key": api_key,
+                "content-type": "application/json"
+            }
+
+            html_content = render_template(
+                "emails/admin_password_reset.html",
+                admin=admin_user,
+                reset_link=reset_link
+            )
+
+            text_content = f"""
+Hello,
+
+A request was made to reset your admin password.
+
+Click the link below to reset your password:
+
+{reset_link}
+
+This link will expire in 30 minutes.
+
+If you did not request a password reset, you can safely ignore this email.
+
+Regards,
+Vertex Prime Digital
+"""
+
+            data = {
+                "sender": {
+                    "name": "Vertex Prime Digital",
+                    "email": sender_email.strip()
+                },
+                "to": [
+                    {
+                        "email": admin_user.email
+                    }
+                ],
+                "subject": "Admin Password Reset",
+                "textContent": text_content,
+                "htmlContent": html_content
+            }
+
+            try:
+                response = requests.post(
+                    BREVO_URL,
+                    headers=headers,
+                    json=data,
+                    timeout=15
+                )
+
+                print("Password reset email status:", response.status_code)
+                print("Brevo response:", response.text)
+
+                if response.status_code not in (200, 201):
+                    # Remove token if email wasn't successfully sent
+                    admin_user.reset_token = None
+                    admin_user.reset_token_expires = None
+                    db.session.commit()
+
+                    flash(
+                        "Unable to send the reset email right now. Please try again later.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "admin/forgot_password.html", form=form
+                    )
+
+            except requests.RequestException as e:
+                print(f"Brevo error: {e}")
+
+                admin_user.reset_token = None
+                admin_user.reset_token_expires = None
+                db.session.commit()
+
+                flash(
+                    "Unable to send the reset email right now. Please try again later.",
+                    "danger"
+                )
+
+                return render_template(
+                    "admin/forgot_password.html", form=form
+                )
+
+        flash(
+            "If an account with that email exists, a password reset link has been sent.",
+            "info"
+        )
+
+        return redirect(url_for("admin.login"))
+
+    return render_template("admin/forgot_password.html", form=form)
+
+
+# ===========================
+# RESET PASSWORD
+# ===============================
+
+@admin.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    form = ResetPasswordForm()
+
+    if current_user.is_authenticated:
+        return redirect(url_for("admin.dashboard"))
+
+    admin_user = Admin.query.filter_by(
+        reset_token=token
+    ).first()
+
+    if not admin_user:
+        flash(
+            "This password reset link is invalid or has expired.",
+            "danger"
+        )
+        return redirect(url_for("admin.login"))
+
+    # Check token expiration
+    if (
+        not admin_user.reset_token_expires
+        or admin_user.reset_token_expires < datetime.utcnow()
+    ):
+        admin_user.reset_token = None
+        admin_user.reset_token_expires = None
+        db.session.commit()
+
+        flash(
+            "This password reset link has expired. Please request a new one.",
+            "danger"
+        )
+
+        return redirect(url_for("admin.forgot_password"))
+
+    # Validate the Flask-WTF form
+    if form.validate_on_submit():
+
+        admin_user.password_hash = generate_password_hash(
+            form.password.data
+        )
+
+        # Invalidate the token immediately after successful use
+        admin_user.reset_token = None
+        admin_user.reset_token_expires = None
+
+        db.session.commit()
+
+        flash(
+            "Your password has been reset successfully. You can now log in.",
+            "success"
+        )
+
+        return redirect(url_for("admin.login"))
+
+    return render_template(
+        "admin/reset_password.html",
+        form=form
+    )
+
+    
 
 # =========================
 # ADMIN LOGOUT

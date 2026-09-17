@@ -31,15 +31,20 @@ class User(db.Model, UserMixin):
         back_populates="liked_by"
     )
 
-
 # -------------------------
 # ADMINS
 # -------------------------
 class Admin(db.Model, UserMixin):
     __tablename__ = "admins"
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
+
+
+    reset_token = db.Column(db.String(255), nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
 
     posts = db.relationship("Post", backref="author", lazy=True)
 

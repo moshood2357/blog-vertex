@@ -1,10 +1,17 @@
-from flask import Blueprint, request, jsonify, flash, redirect, url_for
+
+
+import os
+from app import csrf
+from flask import Blueprint, request, jsonify, flash, redirect, url_for, abort
 from datetime import datetime
 from . import newsletter
 from app import db
 from app.models import NewsletterSubscriber
 from .utils import verify_unsubscribe_token
 
+
+
+from app.newsletter.scheduler import send_weekly_newsletter
 
 
 
@@ -31,7 +38,7 @@ def subscribe():
     db.session.add(new_subscriber)
     db.session.commit()
 
-    return jsonify({"message": "Successfully subscribed!"}), 201
+    return redirect(url_for("main.blog"))
 
 
 @newsletter.route("/unsubscribe/<token>")
@@ -50,3 +57,18 @@ def unsubscribe(token):
         flash("You have successfully unsubscribed.", "success")
 
     return redirect(url_for("main.blog"))
+
+
+
+
+@newsletter.route("/run-weekly-newsletter", methods=["POST"])
+@csrf.exempt
+def run_weekly_newsletter():
+    secret = request.headers.get("X-Cron-Secret", "")
+    expected = os.getenv("CRON_SECRET", "")
+
+    if not expected or secret != expected:
+        abort(403)
+
+    result = send_weekly_newsletter()
+    return jsonify(result), 200
